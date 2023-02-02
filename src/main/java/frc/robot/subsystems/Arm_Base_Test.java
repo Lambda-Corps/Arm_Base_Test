@@ -21,11 +21,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Arm_Base_Test extends SubsystemBase {
   private final WPI_TalonFX m_base_motor;
   
-  private final int ARM_BOTTOM_STAGE = 5;
-  private final int ARM_BOTTOM_REVERSE_LIMIT = 0;
-  private final int kGearRatio = 5 * 5 * 7;
-  private final double ARM_BOTTOM_MAX_DUTY_CYCLE = .20; // Start with 20% max
+  private final int ARM_BOTTOM_STAGE = 6;
+  private final int ARM_BOTTOM_REVERSE_LIMIT = 32000;
+  private final int kGearRatio = 10 * 7 * 7;
+  private final double ARM_BOTTOM_MAX_DUTY_CYCLE = .75; // Start with 20% max
   private final double ARM_BOTTOM_MAX_CURRENT = 5.0; // Start with 5 amps max total
+  private final double Arm_BOTTOM_MAX_CURRENT_STATOR = 10.0; // Supplies 10 amps to the motors
 
   // Ticks per rotation in motor, * ratio, * 1/6 = 1/6 of the arm radial rotation
   // as the forward maximum for testing
@@ -52,7 +53,7 @@ public class Arm_Base_Test extends SubsystemBase {
     base_config.reverseSoftLimitEnable = true;
     base_config.reverseLimitSwitchNormal = LimitSwitchNormal.NormallyOpen;
     base_config.forwardLimitSwitchNormal = LimitSwitchNormal.NormallyOpen;
-    StatorCurrentLimitConfiguration stator_limits = new StatorCurrentLimitConfiguration(true, ARM_BOTTOM_MAX_CURRENT, ARM_BOTTOM_MAX_CURRENT + 1, 0);
+    StatorCurrentLimitConfiguration stator_limits = new StatorCurrentLimitConfiguration(true, Arm_BOTTOM_MAX_CURRENT_STATOR, Arm_BOTTOM_MAX_CURRENT_STATOR + 1, 0);
     SupplyCurrentLimitConfiguration supply_limits = new SupplyCurrentLimitConfiguration(true, ARM_BOTTOM_MAX_CURRENT, ARM_BOTTOM_MAX_CURRENT + 1, 0);
     base_config.statorCurrLimit = stator_limits;
     base_config.supplyCurrLimit = supply_limits;
@@ -68,7 +69,7 @@ public class Arm_Base_Test extends SubsystemBase {
 
   public void drive_arm_manually(double input){
     // Make sure we don't drive above our limits
-    input = MathUtil.clamp(input, -ARM_BOTTOM_MAX_DUTY_CYCLE, ARM_BOTTOM_MAX_DUTY_CYCLE);
+    input = MathUtil.clamp(input, (-ARM_BOTTOM_MAX_DUTY_CYCLE / 3), ARM_BOTTOM_MAX_DUTY_CYCLE);
 
     m_base_motor.set(ControlMode.PercentOutput, input);
   }
