@@ -27,6 +27,7 @@ public class Arm_Base_Test extends SubsystemBase {
   private final double ARM_BOTTOM_MAX_DUTY_CYCLE = .70; // Start with 20% max
   private final double ARM_BOTTOM_MAX_CURRENT = 5.0; // Start with 5 amps max total
   private final double Arm_BOTTOM_MAX_CURRENT_STATOR = 11.5; // Supplies 10 amps to the motors
+  private final double ARM_TARGET_TOLERANCE = 8192;
 
   // Ticks per rotation in motor, * ratio, * 1/6 = 1/6 of the arm radial rotation
   // as the forward maximum for testing
@@ -37,6 +38,24 @@ public class Arm_Base_Test extends SubsystemBase {
     m_base_motor = new WPI_TalonFX(ARM_BOTTOM_STAGE);
 
     TalonFXConfiguration base_config = new TalonFXConfiguration();
+    var upconfig = base_config.slot0;
+    var downconfig = base_config.slot1;
+
+    upconfig.kP = 0.013;
+    upconfig.kD = 0;
+    upconfig.kI = 0;
+    upconfig.kF = 0;
+    upconfig.allowableClosedloopError = 2048;
+    upconfig.closedLoopPeakOutput = ARM_BOTTOM_MAX_DUTY_CYCLE;
+    base_config.slot0 = upconfig;
+
+    downconfig.kP = 0.013;
+    downconfig.kD = 0;
+    downconfig.kI = 0;
+    downconfig.kF = 0;
+    downconfig.allowableClosedloopError = 2048;
+    downconfig.closedLoopPeakOutput = ARM_BOTTOM_MAX_DUTY_CYCLE;
+    base_config.slot0 = downconfig;
 
     // Factory default the talon
     m_base_motor.configFactoryDefault();
@@ -106,4 +125,39 @@ public class Arm_Base_Test extends SubsystemBase {
   public void simulationPeriodic() {
     // This method will be called once per scheduler run during simulation
   }
+
+  private void setBaseToUpGains() {
+    m_base_motor.configMotionCruiseVelocity(12000);
+    m_base_motor.configMotionAcceleration(4000);
+    m_base_motor.selectProfileSlot(0, 0);
+  }
+
+  private void setBaseToDownGains() {
+    m_base_motor.configMotionCruiseVelocity(8000);
+    m_base_motor.configMotionAcceleration(2000);
+    m_base_motor.selectProfileSlot(1, 0);
+  }
+
+  public void configureMotionMagic(int target) {
+    double currentPosition = m_base_motor.getSelectedSensorPosition();
+
+    if(currentPosition < target) {
+      setBaseToUpGains();
+    }
+    else if(currentPosition > target) {
+      setBaseToDownGains();
+    }
+    else {
+      //does nothing
+    }
+  }
+
+  public boolean driveMotionMagic(int target) {
+    m_base_motor.set(ControlMode.MotionMagic, target);
+
+    double error = Math.abs(m_base_motor.getClosedLoopError());
+
+    return error <= ARM_TARGET_TOLERANCE;
+  }
+
 }
