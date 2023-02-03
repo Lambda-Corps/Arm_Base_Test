@@ -24,13 +24,13 @@ public class Arm_Base_Test extends SubsystemBase {
   private final int ARM_BOTTOM_STAGE = 6;
   private final int ARM_BOTTOM_REVERSE_LIMIT = 32000;
   private final int kGearRatio = 10 * 7 * 7;
-  private final double ARM_BOTTOM_MAX_DUTY_CYCLE = .75; // Start with 20% max
+  private final double ARM_BOTTOM_MAX_DUTY_CYCLE = .70; // Start with 20% max
   private final double ARM_BOTTOM_MAX_CURRENT = 5.0; // Start with 5 amps max total
-  private final double Arm_BOTTOM_MAX_CURRENT_STATOR = 10.0; // Supplies 10 amps to the motors
+  private final double Arm_BOTTOM_MAX_CURRENT_STATOR = 11.5; // Supplies 10 amps to the motors
 
   // Ticks per rotation in motor, * ratio, * 1/6 = 1/6 of the arm radial rotation
   // as the forward maximum for testing
-  private final int ARM_BOTTOM_FORWARD_LIMIT = 2048 * kGearRatio * 1/6;
+  private final int ARM_BOTTOM_FORWARD_LIMIT = 150000;
 
   /** Creates a new ExampleSubsystem. */
   public Arm_Base_Test() {
@@ -69,7 +69,7 @@ public class Arm_Base_Test extends SubsystemBase {
 
   public void drive_arm_manually(double input){
     // Make sure we don't drive above our limits
-    input = MathUtil.clamp(input, (-ARM_BOTTOM_MAX_DUTY_CYCLE / 3), ARM_BOTTOM_MAX_DUTY_CYCLE);
+    input = MathUtil.clamp(input, (-ARM_BOTTOM_MAX_DUTY_CYCLE / 1.5), ARM_BOTTOM_MAX_DUTY_CYCLE);
 
     m_base_motor.set(ControlMode.PercentOutput, input);
   }
